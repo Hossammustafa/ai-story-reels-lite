@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/genai";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
 // (تم الإصلاح) قراءة المفتاح بالطريقة الصحيحة الخاصة بـ Vite
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
