@@ -6,8 +6,7 @@ import StyleSelectionScreen from './components/StyleSelectionScreen';
 import GenerationScreen from './components/GenerationScreen';
 import PreviewScreen from './components/PreviewScreen';
 import SavedStoriesScreen from './components/SavedStoriesScreen';
-
-// (ملاحظة: هذه الملفات غير موجودة بعد، ولكننا سننشئها لاحقاً)
+// (ملاحظة: لقد قمنا بإنشاء كل هذه الملفات)
 
 type Screen = 
   | 'onboarding' 
@@ -34,6 +33,56 @@ function App() {
     setScreen('generating');
   };
 
+  const handleGenerationComplete = (script: string) => {
+    setGeneratedScript(script);
+    setScreen('preview');
+  };
+
+  const handleNewStory = () => {
+    setStoryIdea('');
+    setStoryStyle('');
+    setGeneratedScript('');
+    setScreen('storyInput');
+  };
+
+  const renderScreen = () => {
+    switch (screen) {
+      case 'onboarding':
+        return <OnboardingScreen onComplete={() => setScreen('login')} />;
+      case 'login':
+        return <LoginScreen onLogin={() => setScreen('storyInput')} />;
+      case 'storyInput':
+        return (
+          <StoryInputScreen 
+            onSubmit={handleIdeaSubmit} 
+            navigateToSaved={() => setScreen('savedStories')} 
+          />
+        );
+      case 'styleSelection':
+        return <StyleSelectionScreen onSelect={handleStyleSubmit} />;
+      case 'generating':
+        return (
+          <GenerationScreen 
+            idea={storyIdea} 
+            style={storyStyle} 
+            onComplete={handleGenerationComplete} 
+          />
+        );
+      case 'preview':
+        return <PreviewScreen script={generatedScript} onNewStory={handleNewStory} />;
+      case 'savedStories':
+        return <SavedStoriesScreen onBack={() => setScreen('storyInput')} />;
+
+      // (هذا هو السطر الذي كان مفقوداً عندك)
+      default:
+        return <OnboardingScreen onComplete={() => setScreen('login')} />;
+    }
+  };
+
+  return <div className="App">{renderScreen()}</div>;
+}
+
+export default App;
   const handleGenerationComplete = (script: string) => {
     setGeneratedScript(script);
     setScreen('preview');
