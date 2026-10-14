@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../language/LanguageContext';
 import { generateStory } from '../services/geminiService'; // (هذا هو الملف الذي أنشأناه)
 
@@ -10,25 +10,42 @@ interface GenerationScreenProps {
 
 const GenerationScreen: React.FC<GenerationScreenProps> = ({ idea, style, onComplete }) => {
   const { t } = useLanguage();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const getStory = async () => {
-      try {
-        // (هنا يتم استدعاء الذكاء الاصطناعي)
-        const script = await generateStory(idea, style);
-        onComplete(script);
-      } catch (error) {
-        console.error(error);
-        alert(t('errorGenerating'));
-        // (في تطبيق حقيقي، قد ترغب في إعادته إلى الشاشة السابقة)
-        // في هذا القالب، سنقوم بإعادته إلى شاشة الإدخال
-        window.location.reload(); // أبسط طريقة لإعادة التعيين
-      }
-    };
+    let cancelled = false;
 
-    getStory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // يتم تشغيله مرة واحدة فقط عند تحميل المكون
+    generateStory(idea, style)
+      .then((script) => {
+        if (!cancelled) onComplete(script);
+      })
+      .catch((generationError) => {
+        console.error('[v0] Story generation failed:', generationError);
+        if (!cancelled) setError(t('errorGenerating'));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [idea, style, onComplete, t]);
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-900 p-6 text-center text-white">
+        <div className="max-w-md">
+          <h1 className="mb-4 text-3xl font-bold">{error}</h1>
+          <p className="mb-6 text-gray-400">Please go back and try again.</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="rounded-lg bg-indigo-600 px-6 py-3 font-bold transition hover:bg-indigo-700"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen items-center justify-center text-center p-6 bg-gray-900 text-white">
